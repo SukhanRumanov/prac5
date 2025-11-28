@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  api:
+    build: ./api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    env_file:
+      - .env
+  monitor:
+    build: ./monitor
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    env_file:
+      - .env
+
+  bot:
+    build: ./bot
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      BOT_TOKEN: ${BOT_TOKEN}
+    env_file:
+      - .env
+
+volumes:
+  postgres_data:

@@ -1,0 +1,6 @@
+aiogram
+sqlalchemy
+asyncpg
+aio-pika
+python-multipart
+python-dotenv

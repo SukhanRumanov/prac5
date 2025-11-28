@@ -1,0 +1,4 @@
+sqlalchemy
+aio_pika
+requests
+asyncpg
